@@ -36,7 +36,53 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
     const firebaseConfig={apiKey:"AIzaSyC0rYj7ZssPN7u6TSSA8ayXw2Ce2RlU8uQ",authDomain:"crm-casa-rai.firebaseapp.com",projectId:"crm-casa-rai",storageBucket:"crm-casa-rai.firebasestorage.app",messagingSenderId:"867390894417",appId:"1:867390894417:web:75b856c9aa2fead71fe370"};
-    const app=initializeApp(firebaseConfig);const db=getFirestore(app);const form=document.getElementById("leadForm"),submitBtn=document.getElementById("submitBtn"),formMessage=document.getElementById("formMessage"),thankYouBox=document.getElementById("thankYouBox");form.addEventListener("submit",async function(event){event.preventDefault();submitBtn.disabled=true;submitBtn.textContent="Enviando...";formMessage.textContent="Guardando el lead en Firebase...";const payload=Object.fromEntries(new FormData(form).entries());const lead={...payload,nombre:payload.name||"",telefono:payload.phone||"",correo:payload.email||"",estado:"Nuevo",categoria:"Penthouse El Millón",fuente:"Landing GitHub - Penthouse El Millón",propiedad:"Penthouse Avenida Privada, Francisco Prats Ramírez, El Millón",precio:"US$360,000 sin amoblar / US$385,000 amoblado",url:window.location.href,userAgent:navigator.userAgent,createdAt:serverTimestamp()};try{await addDoc(collection(db,"leads"),lead);form.reset();form.style.display="none";thankYouBox.classList.add("show");thankYouBox.scrollIntoView({behavior:"smooth",block:"center"});}catch(error){formMessage.textContent="No se pudo guardar el lead. Revisa la configuración de Firebase y las reglas de Firestore.";submitBtn.disabled=false;submitBtn.textContent="Enviar solicitud";console.error(error)}});
+    const app=initializeApp(firebaseConfig);
+    const db=getFirestore(app);
+    const form=document.getElementById("leadForm");
+    const submitBtn=document.getElementById("submitBtn");
+    const formMessage=document.getElementById("formMessage");
+    const thankYouBox=document.getElementById("thankYouBox");
+
+    function mostrarGracias(){
+      form.reset();
+      form.style.display="none";
+      thankYouBox.classList.add("show");
+      thankYouBox.scrollIntoView({behavior:"smooth",block:"center"});
+    }
+
+    form.addEventListener("submit",async function(event){
+      event.preventDefault();
+      submitBtn.disabled=true;
+      submitBtn.textContent="Enviando...";
+      formMessage.textContent="Enviando tu solicitud...";
+
+      const payload=Object.fromEntries(new FormData(form).entries());
+      const lead={
+        ...payload,
+        nombre:payload.name||"",
+        telefono:payload.phone||"",
+        correo:payload.email||"",
+        estado:"Nuevo",
+        categoria:"Penthouse El Millón",
+        fuente:"Landing GitHub - Penthouse El Millón",
+        propiedad:"Penthouse Avenida Privada, Francisco Prats Ramírez, El Millón",
+        precio:"US$360,000 sin amoblar / US$385,000 amoblado",
+        url:window.location.href,
+        userAgent:navigator.userAgent,
+        createdAt:serverTimestamp()
+      };
+
+      try{
+        await addDoc(collection(db,"leads"),lead);
+        mostrarGracias();
+      }catch(error){
+        console.error("Error guardando el lead en Firebase:",error);
+        alert("No se pudo guardar el lead en Firebase. Revisa las reglas de Firestore o la configuración del proyecto.");
+        submitBtn.disabled=false;
+        submitBtn.textContent="Enviar solicitud";
+        formMessage.textContent="No se pudo guardar el lead. Intenta nuevamente.";
+      }
+    });
   </script>
 </body>
 </html>
